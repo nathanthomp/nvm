@@ -2,7 +2,7 @@ import java.util.Scanner;
 
 public class Main {
     public static void main(String args[]) {
-        Nvm vm = Nvm.start();
+        VirtualMachine virtualMachine = VirtualMachine.start();
         Scanner scanner = new Scanner(System.in);
 
         while (true) {
@@ -15,13 +15,13 @@ public class Main {
 
             try {
                 Command command = Command.getCommand(input);
-                command.execute(vm);
+                command.execute(virtualMachine);
             } catch (Exception e) {
-                System.out.println("Invalid command or error: " + e.getMessage());
+                System.err.println("Invalid command or error: " + e.getMessage());
             }
         }
 
         scanner.close();
-        vm.stop();
+        virtualMachine.stop();
     }
 }
