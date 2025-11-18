@@ -9,13 +9,9 @@ public abstract class Command {
             case "ls":
                 return new ListCurrentFolderCommand();
             case "mkdir":
-                return new AddFolderCommand();
-            case "rmdir":
-                return new RemoveFolderCommand();
+                return new AddFolderCommand(tokens[1]);
             case "touch":
-                return new AddFileCommand();
-            case "rm":
-                return new RemoveFileCommand();
+                return new AddFileCommand(tokens[1]);
             default:
                 throw new IllegalArgumentException("Unknown command");
         }
@@ -45,31 +41,34 @@ public abstract class Command {
     }
 
     private static class AddFolderCommand extends Command {
-        @Override
-        public void execute(VirtualMachine virtualMachine) {
-            System.out.println("Executing: AddFolderCommand.");
-        }
-    }
+        private String name;
 
-    private static class RemoveFolderCommand extends Command {
+        public AddFolderCommand(String name) {
+            this.name = name;
+        }
+
         @Override
         public void execute(VirtualMachine virtualMachine) {
-            System.out.println("Executing: RemoveFolderCommand.");
+            /**
+             * Ideally, we want to create a new Folder here.
+             */
+            virtualMachine.fileSystem.getCurrentFolder().addFolder(this.name);
         }
     }
 
     private static class AddFileCommand extends Command {
+        private String name;
+
+        public AddFileCommand(String name) {
+            this.name = name;
+        }
+
         @Override
         public void execute(VirtualMachine virtualMachine) {
-            System.out.println("Executing: AddFileCommand.");
+            /**
+             * Ideally, we want to create a new File here.
+             */
+            virtualMachine.fileSystem.getCurrentFolder().addFile(name);
         }
     }
-
-    private static class RemoveFileCommand extends Command {
-        @Override
-        public void execute(VirtualMachine virtualMachine) {
-            System.out.println("Executing: RemoveFileCommand.");
-        }
-    }
-
 }
