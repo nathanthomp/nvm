@@ -8,6 +8,14 @@ public abstract class Command {
                 return new PrintCurrentFolderCommand();
             case "ls":
                 return new ListCurrentFolderCommand();
+            case "mkdir":
+                return new AddFolderCommand();
+            case "rmdir":
+                return new RemoveFolderCommand();
+            case "touch":
+                return new AddFileCommand();
+            case "rm":
+                return new RemoveFileCommand();
             default:
                 throw new IllegalArgumentException("Unknown command");
         }
@@ -33,6 +41,34 @@ public abstract class Command {
         @Override
         public void execute(VirtualMachine virtualMachine) {
             virtualMachine.fileSystem.listCurrentFolder();
+        }
+    }
+
+    private static class AddFolderCommand extends Command {
+        @Override
+        public void execute(VirtualMachine virtualMachine) {
+            System.out.println("Executing: AddFolderCommand.");
+        }
+    }
+
+    private static class RemoveFolderCommand extends Command {
+        @Override
+        public void execute(VirtualMachine virtualMachine) {
+            System.out.println("Executing: RemoveFolderCommand.");
+        }
+    }
+
+    private static class AddFileCommand extends Command {
+        @Override
+        public void execute(VirtualMachine virtualMachine) {
+            System.out.println("Executing: AddFileCommand.");
+        }
+    }
+
+    private static class RemoveFileCommand extends Command {
+        @Override
+        public void execute(VirtualMachine virtualMachine) {
+            System.out.println("Executing: RemoveFileCommand.");
         }
     }
 
