@@ -12,6 +12,8 @@ public abstract class Command {
                 return new AddFolderCommand(tokens[1]);
             case "touch":
                 return new AddFileCommand(tokens[1]);
+            case "rm":
+                return new RemoveFileSystemComponentCommand(tokens[1]);
             default:
                 throw new IllegalArgumentException("Unknown command");
         }
@@ -49,10 +51,8 @@ public abstract class Command {
 
         @Override
         public void execute(VirtualMachine virtualMachine) {
-            /**
-             * Ideally, we want to create a new Folder here.
-             */
-            virtualMachine.fileSystem.getCurrentFolder().addFolder(this.name);
+            FileSystem.Folder folder = new FileSystem.Folder(this.name);
+            virtualMachine.fileSystem.getCurrentFolder().add(folder);
         }
     }
 
@@ -65,10 +65,22 @@ public abstract class Command {
 
         @Override
         public void execute(VirtualMachine virtualMachine) {
-            /**
-             * Ideally, we want to create a new File here.
-             */
-            virtualMachine.fileSystem.getCurrentFolder().addFile(name);
+            FileSystem.File file = new FileSystem.File(this.name);
+            virtualMachine.fileSystem.getCurrentFolder().add(file);
+        }
+    }
+
+    private static class RemoveFileSystemComponentCommand extends Command {
+        private String name;
+
+        public RemoveFileSystemComponentCommand(String name) {
+            this.name = name;
+        }
+
+        @Override
+        public void execute(VirtualMachine virtualMachine) {
+            virtualMachine.fileSystem.getCurrentFolder()
+                    .remove(virtualMachine.fileSystem.getCurrentFolder().get(this.name));
         }
     }
 }

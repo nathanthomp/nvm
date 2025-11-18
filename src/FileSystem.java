@@ -10,7 +10,7 @@ public class FileSystem {
         this.rootFolder = rootFolder;
         this.currentFolder = rootFolder;
     }
-    
+
     public Folder getCurrentFolder() {
         return this.currentFolder;
     }
@@ -29,12 +29,29 @@ public class FileSystem {
         String getName();
     }
 
-    public class Folder implements FileSystemComponent {
+    public static class Folder implements FileSystemComponent {
         private String name;
         private List<FileSystemComponent> children = new ArrayList<FileSystemComponent>();
 
-        private Folder(String name) {
+        public Folder(String name) {
             this.name = name;
+        }
+
+        public FileSystemComponent get(String name) {
+            for (FileSystemComponent fileSystemComponent : children) {
+                if (fileSystemComponent.getName().equals(name)) {
+                    return fileSystemComponent;
+                }
+            }
+            throw new IllegalArgumentException("Cannot find " + name);
+        }
+
+        public void add(FileSystemComponent component) {
+            this.children.add(component);
+        }
+
+        public void remove(FileSystemComponent component) {
+            this.children.remove(component);
         }
 
         @Override
@@ -49,25 +66,23 @@ public class FileSystem {
                 fileSystemComponent.list(prefix + "  ");
             }
         }
-
-        /**
-         * Recommended to only have an add and remove method, making use of the FileSystemComponent.
-         */
-
-        public void addFolder(String name) {
-            this.children.add(new Folder(name));
-        }
-
-        public void addFile(String name) {
-            this.children.add(new File(name));
-        }
     }
 
-    private class File implements FileSystemComponent {
+    public static class File implements FileSystemComponent {
         private String name;
+        private String content;
 
-        private File(String name) {
+        public File(String name) {
             this.name = name;
+            this.content = "";
+        }
+
+        public String getContent() {
+            return this.content;
+        }
+
+        public void setContent(String content) {
+            this.content = content;
         }
 
         @Override
