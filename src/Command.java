@@ -1,43 +1,49 @@
 public abstract class Command {
     public static Command getCommand(String input) {
         String[] tokens = input.split(" ");
-        switch (tokens[0]) {
-            case "test":
-                return new TestCommand();
-            case "pwd":
-                return new PrintCurrentFolderCommand();
-            case "ls":
-                return new ListCurrentFolderCommand();
-            case "mkdir":
-                return new AddFolderCommand(tokens[1]);
-            case "touch":
-                return new AddFileCommand(tokens[1]);
-            case "rm":
-                return new RemoveFileSystemComponentCommand(tokens[1]);
-            default:
-                throw new IllegalArgumentException("Unknown command");
+        try {
+            switch (tokens[0]) {
+                case "test":
+                    return new TestCommand();
+                case "pwd":
+                    return new PrintCurrentFolderCommand();
+                case "ls":
+                    return new ListCurrentFolderCommand();
+                case "mkdir":
+                    return new AddFolderCommand(tokens[1]);
+                case "touch":
+                    return new AddFileCommand(tokens[1]);
+                case "rm":
+                    return new RemoveFileSystemComponentCommand(tokens[1]);
+                case "chmod":
+                    return new ChangePermissionsCommand(tokens[1], tokens[2]);
+                default:
+                    throw new IllegalArgumentException("Unknown command");
+            }
+        } catch (IndexOutOfBoundsException e) {
+            throw new IllegalArgumentException("Missing argument");
         }
     }
 
-    public abstract void execute(VirtualMachine virtualMachine);
+    public abstract void execute(final VirtualMachine virtualMachine);
 
     private static class TestCommand extends Command {
         @Override
-        public void execute(VirtualMachine virtualMachine) {
+        public void execute(final VirtualMachine virtualMachine) {
             System.out.println("Executing: TestCommand.");
         }
     }
 
     private static class PrintCurrentFolderCommand extends Command {
         @Override
-        public void execute(VirtualMachine virtualMachine) {
+        public void execute(final VirtualMachine virtualMachine) {
             virtualMachine.fileSystem.printCurrentFolder();
         }
     }
 
     private static class ListCurrentFolderCommand extends Command {
         @Override
-        public void execute(VirtualMachine virtualMachine) {
+        public void execute(final VirtualMachine virtualMachine) {
             virtualMachine.fileSystem.listCurrentFolder();
         }
     }
@@ -50,7 +56,7 @@ public abstract class Command {
         }
 
         @Override
-        public void execute(VirtualMachine virtualMachine) {
+        public void execute(final VirtualMachine virtualMachine) {
             FileSystem.Folder folder = new FileSystem.Folder(this.name);
             virtualMachine.fileSystem.getCurrentFolder().add(folder);
         }
@@ -64,7 +70,7 @@ public abstract class Command {
         }
 
         @Override
-        public void execute(VirtualMachine virtualMachine) {
+        public void execute(final VirtualMachine virtualMachine) {
             FileSystem.File file = new FileSystem.File(this.name);
             virtualMachine.fileSystem.getCurrentFolder().add(file);
         }
@@ -78,9 +84,27 @@ public abstract class Command {
         }
 
         @Override
-        public void execute(VirtualMachine virtualMachine) {
+        public void execute(final VirtualMachine virtualMachine) {
             virtualMachine.fileSystem.getCurrentFolder()
                     .remove(virtualMachine.fileSystem.getCurrentFolder().get(this.name));
+        }
+    }
+
+    private static class ChangePermissionsCommand extends Command {
+        private String name;
+        private String permissions;
+
+        public ChangePermissionsCommand(String name, String permissions) {
+            this.name = name;
+            this.permissions = permissions;
+        }
+
+        @Override
+        public void execute(final VirtualMachine virtualMachine) {
+            boolean canRead = this.permissions.charAt(0) == 'r';
+            boolean canWrite = this.permissions.charAt(1) == 'w';
+            boolean canExecute = this.permissions.charAt(2) == 'x';
+            virtualMachine.fileSystem.getCurrentFolder().get(name).setPermissions(canRead, canWrite, canExecute);
         }
     }
 }

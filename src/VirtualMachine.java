@@ -4,7 +4,7 @@ public class VirtualMachine {
         return new VirtualMachine();
     }
 
-    public FileSystem fileSystem;
+    public final FileSystem fileSystem;
 
     private VirtualMachine() {
         this.fileSystem = new FileSystem();

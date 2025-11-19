@@ -1,6 +1,8 @@
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.naming.OperationNotSupportedException;
+
 public class FileSystem {
     private Folder rootFolder;
     private Folder currentFolder;
@@ -23,21 +25,51 @@ public class FileSystem {
         this.currentFolder.list("");
     }
 
-    private interface FileSystemComponent {
-        void list(String prefix);
+    public static abstract class FileSystemComponent {
+        public abstract void list(String prefix);
 
-        String getName();
-    }
+        protected String name;
+        private boolean canRead = true;
+        private boolean canWrite = true;
+        private boolean canExecute = true;
 
-    public static class Folder implements FileSystemComponent {
-        private String name;
-        private List<FileSystemComponent> children = new ArrayList<FileSystemComponent>();
-
-        public Folder(String name) {
+        public FileSystemComponent(String name) {
             this.name = name;
         }
 
+        public String getName() {
+            return this.name;
+        }
+
+        public void setPermissions(boolean canRead, boolean canWrite, boolean canExecute) {
+            this.canRead = canRead;
+            this.canWrite = canWrite;
+            this.canExecute = canExecute;
+        }
+
+        private String getPermissions() {
+            String permissions = "";
+            permissions += this.canRead ? "r" : "-";
+            permissions += this.canWrite ? "w" : "-";
+            permissions += this.canExecute ? "x" : "-";
+            return permissions;
+        }
+    }
+
+    public static class Folder extends FileSystemComponent {
+        private List<FileSystemComponent> children = new ArrayList<FileSystemComponent>();
+
+        public Folder(String name) {
+            super(name);
+        }
+
         public FileSystemComponent get(String name) {
+            if (!super.canRead) {
+                throw new SecurityException("Insignificant read permissions");
+            }
+            if (super.name.equals(name)) {
+                throw new IllegalArgumentException("Cannot change permissions of current folder");
+            }
             for (FileSystemComponent fileSystemComponent : children) {
                 if (fileSystemComponent.getName().equals(name)) {
                     return fileSystemComponent;
@@ -47,52 +79,56 @@ public class FileSystem {
         }
 
         public void add(FileSystemComponent component) {
+            if (!super.canWrite) {
+                throw new SecurityException("Insignificant write permissions");
+            }
             this.children.add(component);
         }
 
         public void remove(FileSystemComponent component) {
+            if (!super.canWrite) {
+                throw new SecurityException("Insignificant write permissions");
+            }
             this.children.remove(component);
         }
 
         @Override
-        public String getName() {
-            return this.name;
-        }
-
-        @Override
         public void list(String prefix) {
-            System.out.println(prefix + "Folder: " + this.name);
+            if (!super.canRead) {
+                throw new SecurityException("Insignificant read permissions");
+            }
+            System.out.println(prefix + "Folder: (" + super.getPermissions() + ") " + super.name);
             for (FileSystemComponent fileSystemComponent : children) {
                 fileSystemComponent.list(prefix + "  ");
             }
         }
     }
 
-    public static class File implements FileSystemComponent {
-        private String name;
+    public static class File extends FileSystemComponent {
         private String content;
 
         public File(String name) {
-            this.name = name;
+            super(name);
             this.content = "";
         }
 
         public String getContent() {
+            if (!super.canRead) {
+                throw new SecurityException("Insignificant read permissions");
+            }
             return this.content;
         }
 
         public void setContent(String content) {
+            if (!super.canWrite) {
+                throw new SecurityException("Insignificant write permissions");
+            }
             this.content = content;
         }
 
         @Override
-        public String getName() {
-            return this.name;
-        }
-
-        @Override
         public void list(String prefix) {
-            System.out.println(prefix + "File: " + this.name);
+            System.out.println(prefix + "File: (" + super.getPermissions() + ") " + super.name);
         }
     }
 }
