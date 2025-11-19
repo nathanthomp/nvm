@@ -1,20 +1,31 @@
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.naming.OperationNotSupportedException;
-
 public class FileSystem {
     private Folder rootFolder;
     private Folder currentFolder;
 
     public FileSystem() {
-        Folder rootFolder = new Folder("root");
+        Folder rootFolder = new Folder("root", null);
         this.rootFolder = rootFolder;
         this.currentFolder = rootFolder;
     }
 
     public Folder getCurrentFolder() {
         return this.currentFolder;
+    }
+
+    public void changeCurrentFolder(String name) {
+        if (name.equals("..")) {
+            this.currentFolder = this.currentFolder.parent;
+            return;
+        }
+        FileSystemComponent component = this.currentFolder.get(name);
+        if (component instanceof File) {
+            throw new IllegalArgumentException(name + "is not a folder");
+        }
+        Folder folder = (Folder) component;
+        this.currentFolder = folder;
     }
 
     public void printCurrentFolder() {
@@ -57,18 +68,17 @@ public class FileSystem {
     }
 
     public static class Folder extends FileSystemComponent {
+        private Folder parent;
         private List<FileSystemComponent> children = new ArrayList<FileSystemComponent>();
 
-        public Folder(String name) {
+        public Folder(String name, Folder parent) {
             super(name);
+            this.parent = parent;
         }
 
         public FileSystemComponent get(String name) {
             if (!super.canRead) {
                 throw new SecurityException("Insignificant read permissions");
-            }
-            if (super.name.equals(name)) {
-                throw new IllegalArgumentException("Cannot change permissions of current folder");
             }
             for (FileSystemComponent fileSystemComponent : children) {
                 if (fileSystemComponent.getName().equals(name)) {

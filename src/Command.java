@@ -17,6 +17,8 @@ public abstract class Command {
                     return new RemoveFileSystemComponentCommand(tokens[1]);
                 case "chmod":
                     return new ChangePermissionsCommand(tokens[1], tokens[2]);
+                case "cd":
+                    return new ChangeFolderCommand(tokens[1]);
                 default:
                     throw new IllegalArgumentException("Unknown command");
             }
@@ -57,7 +59,7 @@ public abstract class Command {
 
         @Override
         public void execute(final VirtualMachine virtualMachine) {
-            FileSystem.Folder folder = new FileSystem.Folder(this.name);
+            FileSystem.Folder folder = new FileSystem.Folder(this.name, virtualMachine.fileSystem.getCurrentFolder());
             virtualMachine.fileSystem.getCurrentFolder().add(folder);
         }
     }
@@ -85,6 +87,9 @@ public abstract class Command {
 
         @Override
         public void execute(final VirtualMachine virtualMachine) {
+            /**
+             * Change to allow only name into the remove function
+             */
             virtualMachine.fileSystem.getCurrentFolder()
                     .remove(virtualMachine.fileSystem.getCurrentFolder().get(this.name));
         }
@@ -105,6 +110,19 @@ public abstract class Command {
             boolean canWrite = this.permissions.charAt(1) == 'w';
             boolean canExecute = this.permissions.charAt(2) == 'x';
             virtualMachine.fileSystem.getCurrentFolder().get(name).setPermissions(canRead, canWrite, canExecute);
+        }
+    }
+
+    private static class ChangeFolderCommand extends Command {
+        private String name;
+
+        public ChangeFolderCommand(String name) {
+            this.name = name;
+        }
+
+        @Override
+        public void execute(final VirtualMachine virtualMachine) {
+            virtualMachine.fileSystem.changeCurrentFolder(this.name);
         }
     }
 }
