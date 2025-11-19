@@ -17,12 +17,18 @@ public class FileSystem {
 
     public void changeCurrentFolder(String name) {
         if (name.equals("..")) {
-            this.currentFolder = this.currentFolder.parent;
-            return;
+            if (this.currentFolder.parent != null) {
+                this.currentFolder = this.currentFolder.parent;
+                return;
+            }
+            throw new IllegalArgumentException("Already at root");
         }
         FileSystemComponent component = this.currentFolder.get(name);
         if (component instanceof File) {
-            throw new IllegalArgumentException(name + "is not a folder");
+            throw new IllegalArgumentException(name + " is not a folder");
+        }
+        if (!component.canExecute) {
+            throw new SecurityException("Insufficient execute permissions");
         }
         Folder folder = (Folder) component;
         this.currentFolder = folder;
