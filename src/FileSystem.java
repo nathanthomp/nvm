@@ -84,7 +84,7 @@ public class FileSystem {
 
         public FileSystemComponent get(String name) {
             if (!super.canRead) {
-                throw new SecurityException("Insignificant read permissions");
+                throw new SecurityException("Insufficient read permissions");
             }
             for (FileSystemComponent fileSystemComponent : children) {
                 if (fileSystemComponent.getName().equals(name)) {
@@ -96,14 +96,14 @@ public class FileSystem {
 
         public void add(FileSystemComponent component) {
             if (!super.canWrite) {
-                throw new SecurityException("Insignificant write permissions");
+                throw new SecurityException("Insufficient write permissions");
             }
             this.children.add(component);
         }
 
         public void remove(FileSystemComponent component) {
             if (!super.canWrite) {
-                throw new SecurityException("Insignificant write permissions");
+                throw new SecurityException("Insufficient write permissions");
             }
             this.children.remove(component);
         }
@@ -111,7 +111,7 @@ public class FileSystem {
         @Override
         public void list(String prefix) {
             if (!super.canRead) {
-                throw new SecurityException("Insignificant read permissions");
+                throw new SecurityException("Insufficient read permissions");
             }
             System.out.println(prefix + "Folder: (" + super.getPermissions() + ") " + super.name);
             for (FileSystemComponent fileSystemComponent : children) {
@@ -130,17 +130,21 @@ public class FileSystem {
 
         public String getContent() {
             if (!super.canRead) {
-                throw new SecurityException("Insignificant read permissions");
+                throw new SecurityException("Insufficient read permissions");
             }
             return this.content;
         }
 
         public void setContent(String content) {
             if (!super.canWrite) {
-                throw new SecurityException("Insignificant write permissions");
+                throw new SecurityException("Insufficient write permissions");
             }
             this.content = content;
         }
+
+        /**
+         * Get size
+         */
 
         @Override
         public void list(String prefix) {
