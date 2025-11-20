@@ -27,10 +27,10 @@ public class FileSystem {
         if (component instanceof File) {
             throw new IllegalArgumentException(name + " is not a folder");
         }
-        if (!component.canExecute) {
+        Folder folder = (Folder) component;
+        if (!folder.canExecute) {
             throw new SecurityException("Insufficient execute permissions");
         }
-        Folder folder = (Folder) component;
         this.currentFolder = folder;
     }
 
@@ -46,9 +46,9 @@ public class FileSystem {
         public abstract void list(String prefix);
 
         protected String name;
-        private boolean canRead = true;
-        private boolean canWrite = true;
-        private boolean canExecute = true;
+        protected boolean canRead = true;
+        protected boolean canWrite = true;
+        protected boolean canExecute = true;
 
         public FileSystemComponent(String name) {
             this.name = name;
