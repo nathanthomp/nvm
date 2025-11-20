@@ -23,6 +23,10 @@ public abstract class Command {
                     return new ReadFileCommand(tokens[1]);
                 case "echo":
                     return new WriteFileCommand(tokens[1], input.split("\"")[1]);
+                case "info":
+                    return new InfoCommand();
+                case "logout":
+                    return new LogoutCommand();
                 default:
                     throw new IllegalArgumentException("Unknown command");
             }
@@ -163,6 +167,21 @@ public abstract class Command {
             }
             FileSystem.File file = (FileSystem.File) virtualMachine.fileSystem.getCurrentFolder().get(this.name);
             file.setContent(this.content);
+        }
+    }
+
+    private static class InfoCommand extends Command {
+        @Override
+        public void execute(final VirtualMachine virtualMachine) {
+            System.out.println("currentUser: " + virtualMachine.getCurrentUser().getUsername());
+            System.out.println("currentFolder: " + virtualMachine.fileSystem.getCurrentFolder().getName());
+        }
+    }
+
+    private static class LogoutCommand extends Command {
+        @Override
+        public void execute(final VirtualMachine virtualMachine) {
+            virtualMachine.setCurrentUser(null);
         }
     }
 }
