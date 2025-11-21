@@ -5,37 +5,46 @@ public class Main {
         VirtualMachine virtualMachine = VirtualMachine.start();
         Scanner scanner = new Scanner(System.in);
 
-        // Temp
-        String correctUsername = "nathan";
-
         while (true) {
             if (virtualMachine.getCurrentUser() == null) {
-                System.out.println("Enter username:");
-                String username = getInput(scanner);
-                if (!correctUsername.equals(username)) {
-                    System.out.println("User " + username + " not found");
-                    continue;
-                }
-                virtualMachine.setCurrentUser(new User(username));
-                System.out.println("Hello, " + username);
+                handleLogin(virtualMachine, scanner);
             } else {
-                String input = getInput(scanner);
-
-                if (input.equals("exit")) {
+                if (!handleCommand(virtualMachine, scanner)) {
                     break;
-                }
-
-                try {
-                    Command command = Command.getCommand(input);
-                    command.execute(virtualMachine);
-                } catch (Exception e) {
-                    System.err.println("Invalid command or error: " + e.getMessage());
                 }
             }
         }
 
         scanner.close();
         virtualMachine.stop();
+    }
+
+    private static void handleLogin(VirtualMachine virtualMachine, Scanner scanner) {
+        System.out.println("Enter username:");
+        String username = getInput(scanner);
+        if (!User.userExists(username)) {
+            System.out.println("User " + username + " not found\n");
+            return;
+        }
+        virtualMachine.setCurrentUser(new User(username));
+        System.out.println("Hello, " + username + "\n");
+    }
+
+    private static boolean handleCommand(VirtualMachine virtualMachine, Scanner scanner) {
+        String input = getInput(scanner);
+        if (input.isEmpty()) {
+            return true;
+        }
+        if (input.equals("exit")) {
+            return false;
+        }
+        try {
+            Command command = Command.getCommand(input);
+            command.execute(virtualMachine);
+        } catch (Exception e) {
+            System.out.println("Invalid command or error: " + e.getMessage());
+        }
+        return true;
     }
 
     private static String getInput(Scanner scanner) {
