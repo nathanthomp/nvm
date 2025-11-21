@@ -1,6 +1,6 @@
 public class VirtualMachine {
     public static VirtualMachine start() {
-        System.out.println("Starting the nvm!\n");
+        System.out.println("Starting the nvm!");
         return new VirtualMachine();
     }
 

@@ -1,13 +1,13 @@
 public class User {
     public static final User[] users = { new User("nathan") };
 
-    public static boolean userExists(String username) {
+    public static User getUser(String username) {
         for (User user : users) {
             if (user.getUsername().equals(username)) {
-                return true;
+                return user;
             }
         }
-        return false;
+        return null;
     }
 
     public static boolean verifyUser(String username, String password) {
