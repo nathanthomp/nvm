@@ -47,13 +47,15 @@ public class Terminal {
             public void handleInput(String input) {
                 User user = User.getUser(input);
                 if (user == null) {
-                    System.out.println("User " + input + " not found\n");
+                    System.out.println("User " + input + " not found");
                     return;
                 }
                 super.terminal.virtualMachine.setCurrentUser(user);
                 System.out.println("Hello, " + user.getUsername() + "\n");
 
                 super.terminal.state = new CommandState(super.terminal);
+                super.terminal.virtualMachine.fileSystem.changeCurrentFolder("user");
+                super.terminal.virtualMachine.fileSystem.changeCurrentFolder(user.getUsername());
             }
         }
 
@@ -64,9 +66,7 @@ public class Terminal {
 
             @Override
             public void queryInput() {
-                // System.out.print(super.terminal.virtualMachine.fileSystem.getCurrentFolder().getName()
-                // + "> ");
-                System.out.print("> ");
+                System.out.print(super.terminal.virtualMachine.fileSystem.getCurrentFolder().getPath() + "> ");
             }
 
             @Override
@@ -117,6 +117,8 @@ public class Terminal {
                         return new InfoCommand();
                     case "logout":
                         return new LogoutCommand();
+                    case "path":
+                        return new PathCommand(tokens[1]);
                     default:
                         throw new IllegalArgumentException("Unknown command");
                 }
@@ -137,14 +139,15 @@ public class Terminal {
         private static class PrintCurrentFolderCommand extends Command {
             @Override
             public void execute(final Terminal terminal) {
-                terminal.virtualMachine.fileSystem.printCurrentFolder();
+                System.out
+                        .println("Current Folder: " + terminal.virtualMachine.fileSystem.getCurrentFolder().getName());
             }
         }
 
         private static class ListCurrentFolderCommand extends Command {
             @Override
             public void execute(final Terminal terminal) {
-                terminal.virtualMachine.fileSystem.listCurrentFolder();
+                terminal.virtualMachine.fileSystem.getCurrentFolder().list("");
             }
         }
 
@@ -172,8 +175,9 @@ public class Terminal {
 
             @Override
             public void execute(final Terminal terminal) {
-                FileSystem.File file = new FileSystem.File(this.name);
-                terminal.virtualMachine.fileSystem.getCurrentFolder().add(file);
+                FileSystem.Folder folder = terminal.virtualMachine.fileSystem.getCurrentFolder();
+                FileSystem.File file = new FileSystem.File(this.name, folder);
+                folder.add(file);
             }
         }
 
@@ -214,15 +218,35 @@ public class Terminal {
         }
 
         private static class ChangeFolderCommand extends Command {
-            private String name;
+            private String path;
 
-            public ChangeFolderCommand(String name) {
-                this.name = name;
+            public ChangeFolderCommand(String path) {
+                this.path = path;
             }
 
             @Override
             public void execute(final Terminal terminal) {
-                terminal.virtualMachine.fileSystem.changeCurrentFolder(this.name);
+                // terminal.virtualMachine.fileSystem.changeCurrentFolder(this.name);
+
+                // FileSystem.SearchVisitor searchVisitor = new
+                // FileSystem.SearchVisitor(this.name);
+                // terminal.virtualMachine.fileSystem.getCurrentFolder().accept(searchVisitor);
+                // if (searchVisitor.getResult() == null) {
+                // throw new IllegalArgumentException(this.name + " not found");
+                // }
+                // if (searchVisitor.getResult() instanceof FileSystem.File) {
+                // throw new IllegalArgumentException(this.name + " is not a folder");
+                // }
+                // FileSystem.Folder folder = (FileSystem.Folder) searchVisitor.getResult();
+                // terminal.virtualMachine.fileSystem.setCurrentFolder(folder);
+
+                FileSystem.Component component = terminal.virtualMachine.fileSystem.getCurrentFolder()
+                        .resolve(this.path);
+                if (!(component instanceof FileSystem.Folder)) {
+                    throw new IllegalArgumentException(this.path + " is not a folder");
+                }
+                FileSystem.Folder folder = (FileSystem.Folder) component;
+                terminal.virtualMachine.fileSystem.setCurrentFolder(folder);
             }
         }
 
@@ -279,6 +303,21 @@ public class Terminal {
             public void execute(final Terminal terminal) {
                 terminal.virtualMachine.setCurrentUser(null);
                 terminal.state = new Terminal.State.LoginState(terminal);
+            }
+        }
+
+        private static class PathCommand extends Command {
+            private String name;
+
+            public PathCommand(String name) {
+                this.name = name;
+            }
+
+            @Override
+            public void execute(final Terminal terminal) {
+                FileSystem.Component component = terminal.virtualMachine.fileSystem.getCurrentFolder()
+                        .get(this.name);
+                System.out.println(component.getPath());
             }
         }
     }
